@@ -1,0 +1,9 @@
+name = "kvpk"
+main = "src/index.ts"
+compatibility_date = "2022-11-16"
+node_compat = true
+
+kv_namespaces = [
+  { binding = "NONCES", id = "NONCES_ID", preview_id = "NONCES_PREVIEW_ID" },
+  { binding = "DATA", id = "DATA_ID", preview_id = "DATA_PREVIEW_ID" },
+]
