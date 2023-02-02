@@ -1,29 +1,33 @@
-import { AuthorizedRequest, Env } from '../types'
+import { Request as IttyRequest } from 'itty-router'
+import { Env } from '../types'
 import { keyForPk, respond, respondError } from '../utils'
 
 export const list = async (
-  request: AuthorizedRequest<{ prefix: string }>,
+  request: IttyRequest,
   { DATA }: Env
 ): Promise<Response> => {
-  if (!request.parsedBody.data.prefix) {
-    return respondError(400, 'Invalid request body')
+  const publicKey = request.params?.publicKey
+  if (!publicKey) {
+    return respondError(400, 'Missing publicKey.')
+  }
+
+  const prefix = request.params?.prefix
+  if (!prefix) {
+    return respondError(400, 'Missing prefix.')
   }
 
   const keys: string[] = []
   let cursor: string | undefined
   while (true) {
     const response = await DATA.list({
-      prefix: keyForPk(
-        request.parsedBody.data.auth.publicKey,
-        request.parsedBody.data.prefix
-      ),
+      prefix: keyForPk(publicKey, prefix),
       cursor,
     })
 
     keys.push(
       ...response.keys.map((k) =>
         // Remove the public key prefix from the key.
-        k.name.replace(keyForPk(request.parsedBody.data.auth.publicKey, ''), '')
+        k.name.replace(keyForPk(publicKey, ''), '')
       )
     )
 
@@ -36,9 +40,8 @@ export const list = async (
 
   const values = await Promise.all(
     keys.map((key) =>
-      DATA.get(keyForPk(request.parsedBody.data.auth.publicKey, key)).then(
-        (stringifiedValue) =>
-          stringifiedValue ? JSON.parse(stringifiedValue) : null
+      DATA.get(keyForPk(publicKey, key)).then((stringifiedValue) =>
+        stringifiedValue ? JSON.parse(stringifiedValue) : null
       )
     )
   )

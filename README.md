@@ -3,7 +3,8 @@
 key-value for private key
 
 A [Cloudflare Worker](https://workers.cloudflare.com/) that allows a Cosmos
-keypair to store arbitrary data in a KV store.
+keypair to store arbitrary data in a KV store. Like the blockchain, **all data
+is publicly readable.** This is _not_ a secure storage solution.
 
 Used template for [Cosmos wallet
 authentication](https://github.com/NoahSaso/cloudflare-worker-cosmos-auth) to
@@ -56,10 +57,10 @@ See [the authentication template's
 docs](https://github.com/NoahSaso/cloudflare-worker-cosmos-auth#client-usage) on
 how to authenticate requests with a Cosmos wallet.
 
-The request data for the routes below must be included in the `data` field that
-gets signed in the API described above.
-
 ### `POST /set`
+
+The request data for this route must be included in the `data` field that gets
+signed in the authentication API described above.
 
 Set a key-value pair in the KV store. Set `value` to `null` to delete a key. Any
 other value will be stored and returned identically.
@@ -81,17 +82,9 @@ other value will be stored and returned identically.
 }
 ```
 
-### `POST /get`
+### `GET /get/:publicKey/:key`
 
-Get a value from the KV store.
-
-#### Request data:
-
-```typescript
-{
-  "key": string
-}
-```
+Get a value from the KV store. `publicKey` is a hex-encoded Cosmos public key.
 
 #### Response:
 
@@ -102,17 +95,10 @@ Get a value from the KV store.
 }
 ```
 
-### `POST /list`
+### `GET /list/:publicKey/:prefix`
 
-List keys with a prefix in the KV store.
-
-#### Request data:
-
-```typescript
-{
-  "prefix": string
-}
-```
+List keys with a prefix in the KV store. `publicKey` is a hex-encoded Cosmos
+public key.
 
 #### Response:
 

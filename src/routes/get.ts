@@ -1,24 +1,27 @@
-import { AuthorizedRequest, Env } from '../types'
+import { Request as IttyRequest } from 'itty-router'
+
+import { Env } from '../types'
 import { keyForPk, respond, respondError } from '../utils'
 
 export const get = async (
-  request: AuthorizedRequest<{ key: string }>,
+  request: IttyRequest,
   { DATA }: Env
 ): Promise<Response> => {
-  if (!request.parsedBody.data.key) {
-    return respondError(400, 'Invalid request body')
+  const publicKey = request.params?.publicKey
+  if (!publicKey) {
+    return respondError(400, 'Missing publicKey.')
   }
 
-  const stringifiedValue = await DATA.get(
-    keyForPk(
-      request.parsedBody.data.auth.publicKey,
-      request.parsedBody.data.key
-    )
-  )
+  const key = request.params?.key
+  if (!key) {
+    return respondError(400, 'Missing key.')
+  }
+
+  const stringifiedValue = await DATA.get(keyForPk(publicKey, key))
   const value = stringifiedValue ? JSON.parse(stringifiedValue) : null
 
   return respond(200, {
-    key: request.parsedBody.data.key,
+    key,
     value,
   })
 }

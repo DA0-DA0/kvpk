@@ -30,16 +30,16 @@ router.all('*', preflight)
 // Get nonce for publicKey.
 router.get('/nonce/:publicKey', handleNonce)
 
+// Get value.
+router.get('/get/:publicKey/:key', get)
+
+// List keys with prefix.
+router.get('/list/:publicKey/:prefix', list)
+
 //! Authenticated routes.
 
 // Set value.
 router.post('/set', authMiddleware, set)
-
-// Get value.
-router.post('/get', authMiddleware, get)
-
-// List keys with prefix.
-router.post('/list', authMiddleware, list)
 
 //! 404
 router.all('*', () => respondError(404, 'Not found'))
