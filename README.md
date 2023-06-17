@@ -82,6 +82,33 @@ other value will be stored and returned identically.
 }
 ```
 
+### `POST /setMany`
+
+The request data for this route must be included in the `data` field that gets
+signed in the authentication API described above.
+
+Set many key-value pairs in the KV store. Set `value` to `null` to delete a key.
+Any other value will be stored and returned identically.
+
+#### Request data:
+
+```typescript
+{
+  "data": {
+    "key": string
+    "value": any | null
+  }[]
+}
+```
+
+#### Response:
+
+```typescript
+{
+  "success": true
+}
+```
+
 ### `GET /get/:publicKey/:key`
 
 Get a value from the KV store. `publicKey` is a hex-encoded Cosmos public key.

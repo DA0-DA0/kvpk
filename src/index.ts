@@ -6,6 +6,7 @@ import { authMiddleware } from './auth'
 import { handleNonce } from './routes/nonce'
 import { respondError } from './utils'
 import { set } from './routes/set'
+import { setMany } from './routes/setMany'
 import { get } from './routes/get'
 import { list } from './routes/list'
 
@@ -40,6 +41,9 @@ router.get('/list/:publicKey/:prefix', list)
 
 // Set value.
 router.post('/set', authMiddleware, set)
+
+// Set many values.
+router.post('/setMany', authMiddleware, setMany)
 
 //! 404
 router.all('*', () => respondError(404, 'Not found'))
