@@ -47,9 +47,12 @@ export const list = async (
   )
 
   return respond(200, {
-    items: keys.map((key, i) => ({
-      key,
-      value: values[i],
-    })),
+    items: keys
+      .map((key, i) => ({
+        key,
+        value: values[i],
+      }))
+      // Filter out null values since these keys were deleted.
+      .filter(({ value }) => value !== null),
   })
 }
