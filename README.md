@@ -137,3 +137,19 @@ public key.
   }>
 }
 ```
+
+### `GET /reverse/:key`
+
+Get the list of public keys that have a key-value pair with the given key in the
+KV store. `publicKey` in the response is a hex-encoded Cosmos public key.
+
+#### Response:
+
+```typescript
+{
+  "items": Array<{
+    "publicKey": string
+    "value": any
+  }>
+}
+```

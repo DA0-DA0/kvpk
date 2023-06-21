@@ -1,9 +1,9 @@
 import { AuthorizedRequest, Env } from '../types'
-import { keyForPk, respond, respondError } from '../utils'
+import { del, put, respond, respondError } from '../utils'
 
 export const setMany = async (
   request: AuthorizedRequest<{ data: { key: string; value: unknown }[] }>,
-  { DATA }: Env
+  env: Env
 ): Promise<Response> => {
   if (
     !request.parsedBody.data.data ||
@@ -20,14 +20,11 @@ export const setMany = async (
     request.parsedBody.data.data.map(async ({ key, value }) => {
       // If value is null, delete the key.
       if (value === null) {
-        await DATA.delete(keyForPk(request.parsedBody.data.auth.publicKey, key))
+        await del(env, request.parsedBody.data.auth.publicKey, key)
       }
       // Otherwise, set it.
       else {
-        await DATA.put(
-          keyForPk(request.parsedBody.data.auth.publicKey, key),
-          JSON.stringify(value)
-        )
+        await put(env, request.parsedBody.data.auth.publicKey, key, value)
       }
     })
   )

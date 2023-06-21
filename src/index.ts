@@ -9,6 +9,7 @@ import { set } from './routes/set'
 import { setMany } from './routes/setMany'
 import { get } from './routes/get'
 import { list } from './routes/list'
+import { reverse } from './routes/reverse'
 
 // Create CORS handlers.
 const { preflight, corsify } = createCors({
@@ -36,6 +37,9 @@ router.get('/get/:publicKey/:key', get)
 
 // List keys with prefix.
 router.get('/list/:publicKey/:prefix', list)
+
+// List public keys that have a key set.
+router.get('/reverse/:key', reverse)
 
 //! Authenticated routes.
 
