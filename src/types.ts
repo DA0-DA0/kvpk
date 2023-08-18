@@ -12,7 +12,7 @@ export interface Auth {
   chainFeeDenom: string
   chainBech32Prefix: string
   publicKey: string
-  account?: string
+  address?: string
 }
 
 export type RequestBody<
