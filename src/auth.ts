@@ -29,10 +29,13 @@ export const verifySignature = async ({
   signature,
 }: RequestBody): Promise<boolean> => {
   try {
-    const signer = secp256k1PublicKeyToBech32Address(
-      data.auth.publicKey,
-      data.auth.chainBech32Prefix
-    )
+    let signer = data.auth.account
+    if(!signer) {
+      signer = secp256k1PublicKeyToBech32Address(
+        data.auth.publicKey,
+        data.auth.chainBech32Prefix
+      )
+    }
     const message = serializeSignDoc(
       makeSignDoc(
         [
