@@ -1,11 +1,11 @@
 import { Router, cors, json } from 'itty-router'
 
 import { authMiddleware } from './auth'
-import { set } from './routes/set'
-import { setMany } from './routes/setMany'
 import { get } from './routes/get'
 import { list } from './routes/list'
 import { reverse } from './routes/reverse'
+import { set } from './routes/set'
+import { setMany } from './routes/setMany'
 
 // Create CORS handlers.
 const { preflight, corsify } = cors({

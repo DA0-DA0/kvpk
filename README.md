@@ -30,23 +30,10 @@ wrangler dev --local --persist
 
 1. Copy `wrangler.toml.example` to `wrangler.toml`.
 
-2. Create KV namespaces for production and development:
+2. Create D1 database and update binding in `wrangler.toml`:
 
 ```sh
-npx wrangler kv:namespace create NONCES
-npx wrangler kv:namespace create NONCES --preview
-
-npx wrangler kv:namespace create DATA
-npx wrangler kv:namespace create DATA --preview
-```
-
-3. Update the binding IDs in `wrangler.toml`:
-
-```toml
-kv-namespaces = [
-  { binding = "NONCES", id = "<INSERT NONCES_ID>", preview_id = "<INSERT NONCES_PREVIEW_ID>" },
-  { binding = "DATA", id = "<INSERT DATA_ID>", preview_id = "<INSERT DATA_PREVIEW_ID>" },
-]
+npx wrangler d1 create kvpk
 ```
 
 ## Deploy
@@ -120,8 +107,8 @@ A 204 No Content response is returned on success.
 
 No authentication is required.
 
-Get a value from the KV store. `uuid` is the UUID of the user's profile from the
-PFPK auth service.
+Get a value for a UUID and key. `uuid` is the UUID of the user's profile from
+the PFPK auth service.
 
 #### Response
 
@@ -136,7 +123,7 @@ PFPK auth service.
 
 No authentication is required.
 
-List keys with a prefix in the KV store. `uuid` is the UUID of the user's
+List keys with a prefix for a given UUID. `uuid` is the UUID of the user's
 profile from the PFPK auth service.
 
 #### Response
@@ -154,8 +141,7 @@ profile from the PFPK auth service.
 
 No authentication is required.
 
-Get the list of UUIDs that have a key-value pair with the given key in the KV
-store.
+Get the list of UUIDs and values that have a given key set.
 
 #### Response
 

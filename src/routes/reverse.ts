@@ -1,53 +1,25 @@
-import { json, RequestHandler } from 'itty-router'
-import { reverseKeyForUuid } from '../utils'
+import { RequestHandler, json } from 'itty-router'
+
 import { ReverseResponse } from '../types'
+import { kvReverse } from '../utils'
 
 export const reverse: RequestHandler = async (
   request,
-  { DATA }: Env
+  env: Env
 ): Promise<ReverseResponse> => {
   const { key } = request.params || {}
   if (!key) {
     throw json({ error: 'Missing key.' }, { status: 400 })
   }
 
-  const uuids: string[] = []
-  let cursor: string | undefined
-  while (true) {
-    const response = await DATA.list({
-      prefix: reverseKeyForUuid('', key),
-      cursor,
-    })
+  const limit = request.query.limit ? Number(request.query.limit) : undefined
 
-    uuids.push(
-      ...response.keys.map((k) =>
-        // Remove the key from the key.
-        k.name.replace(reverseKeyForUuid('', key), '')
-      )
-    )
-
-    if (response.list_complete) {
-      break
-    }
-
-    cursor = response.cursor
-  }
-
-  const values = await Promise.all(
-    uuids.map((uuid) =>
-      DATA.get(reverseKeyForUuid(uuid, key)).then((stringifiedValue) =>
-        stringifiedValue ? JSON.parse(stringifiedValue) : null
-      )
-    )
-  )
+  const items = await kvReverse(env, {
+    key,
+    limit,
+  })
 
   return {
-    items: uuids
-      .map((uuid, i) => ({
-        uuid,
-        value: values[i],
-      }))
-      // Filter out null values since these keys were deleted.
-      .filter(({ value }) => value !== null),
+    items,
   }
 }

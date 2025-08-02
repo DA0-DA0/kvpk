@@ -1,5 +1,6 @@
-import { AuthorizedRequest, PfpkFetchAuthenticatedResponse } from './types'
 import { json } from 'itty-router'
+
+import { AuthorizedRequest, PfpkFetchAuthenticatedResponse } from './types'
 
 // Middleware to protect routes with the above function. If it does not return,
 // the request is authorized. If successful, the `parsedBody` field will be set

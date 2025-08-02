@@ -1,9 +1,12 @@
 name = "kvpk"
 main = "src/index.ts"
-compatibility_date = "2022-11-16"
-node_compat = true
+compatibility_date = "2025-07-12"
 
-kv_namespaces = [
-  { binding = "NONCES", id = "NONCES_ID", preview_id = "NONCES_PREVIEW_ID" },
-  { binding = "DATA", id = "DATA_ID", preview_id = "DATA_PREVIEW_ID" },
+routes = [
+  { pattern = "kvpk.daodao.zone", custom_domain = true, zone_name = "daodao.zone" },
 ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kvpk"
+database_id = "2a056764-14ea-4d7a-85be-51fe92a3f5c8"

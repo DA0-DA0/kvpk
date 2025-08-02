@@ -5,7 +5,7 @@ export type PfpkFetchAuthenticatedResponse = {
 }
 
 export type AuthorizedRequest<
-  Data extends Record<string, unknown> = Record<string, unknown>
+  Data extends Record<string, unknown> = Record<string, unknown>,
 > = IRequestStrict & {
   /**
    * The parsed body of the request, if any.

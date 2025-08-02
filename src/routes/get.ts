@@ -1,11 +1,11 @@
-import { json, RequestHandler } from 'itty-router'
+import { RequestHandler, json } from 'itty-router'
 
-import { keyForUuid } from '../utils'
 import { GetResponse } from '../types'
+import { kvGet } from '../utils'
 
 export const get: RequestHandler = async (
   request,
-  { DATA }: Env
+  env: Env
 ): Promise<GetResponse> => {
   const { uuid, key } = request.params || {}
 
@@ -16,8 +16,7 @@ export const get: RequestHandler = async (
     throw json({ error: 'Missing key.' }, { status: 400 })
   }
 
-  const stringifiedValue = await DATA.get(keyForUuid(uuid, key))
-  const value = stringifiedValue ? JSON.parse(stringifiedValue) : null
+  const value = await kvGet(env, { uuid, key })
 
   return {
     key,

@@ -1,6 +1,7 @@
-import { json, RequestHandler } from 'itty-router'
+import { RequestHandler, json } from 'itty-router'
+
 import { AuthorizedRequest, SetRequest } from '../types'
-import { del, put } from '../utils'
+import { kvSet, kvUnset } from '../utils'
 
 export const set: RequestHandler<AuthorizedRequest<SetRequest>> = async (
   request,
@@ -12,11 +13,15 @@ export const set: RequestHandler<AuthorizedRequest<SetRequest>> = async (
 
   // If value is null, delete the key.
   if (request.data.value === null) {
-    await del(env, request.uuid, request.data.key)
+    await kvUnset(env, { uuid: request.uuid, key: request.data.key })
   }
   // Otherwise, set it.
   else {
-    await put(env, request.uuid, request.data.key, request.data.value)
+    await kvSet(env, {
+      uuid: request.uuid,
+      key: request.data.key,
+      value: request.data.value,
+    })
   }
 
   return new Response(null, { status: 204 })

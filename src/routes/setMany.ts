@@ -1,6 +1,7 @@
-import { json, RequestHandler } from 'itty-router'
+import { RequestHandler, json } from 'itty-router'
+
 import { AuthorizedRequest, SetManyRequest } from '../types'
-import { del, put } from '../utils'
+import { kvSet, kvUnset } from '../utils'
 
 export const setMany: RequestHandler<
   AuthorizedRequest<SetManyRequest>
@@ -20,11 +21,11 @@ export const setMany: RequestHandler<
     request.data.items.map(async ({ key, value }) => {
       // If value is null, delete the key.
       if (value === null) {
-        await del(env, request.uuid, key)
+        await kvUnset(env, { uuid: request.uuid, key })
       }
       // Otherwise, set it.
       else {
-        await put(env, request.uuid, key, value)
+        await kvSet(env, { uuid: request.uuid, key, value })
       }
     })
   )
