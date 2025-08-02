@@ -1,36 +1,23 @@
-import { AuthorizedRequest, Env } from '../types'
-import { del, put, respond, respondError } from '../utils'
+import { json, RequestHandler } from 'itty-router'
+import { AuthorizedRequest, SetRequest } from '../types'
+import { del, put } from '../utils'
 
-export const set = async (
-  request: AuthorizedRequest<{ key: string; value: unknown }>,
+export const set: RequestHandler<AuthorizedRequest<SetRequest>> = async (
+  request,
   env: Env
 ): Promise<Response> => {
-  if (
-    !request.parsedBody.data.key ||
-    request.parsedBody.data.value === undefined
-  ) {
-    return respondError(400, 'Invalid request body')
+  if (!request.data.key || request.data.value === undefined) {
+    return json({ error: 'Empty key or value.' }, { status: 400 })
   }
 
   // If value is null, delete the key.
-  if (request.parsedBody.data.value === null) {
-    await del(
-      env,
-      request.parsedBody.data.auth.publicKey,
-      request.parsedBody.data.key
-    )
+  if (request.data.value === null) {
+    await del(env, request.uuid, request.data.key)
   }
   // Otherwise, set it.
   else {
-    await put(
-      env,
-      request.parsedBody.data.auth.publicKey,
-      request.parsedBody.data.key,
-      request.parsedBody.data.value
-    )
+    await put(env, request.uuid, request.data.key, request.data.value)
   }
 
-  return respond(200, {
-    success: true,
-  })
+  return new Response(null, { status: 204 })
 }

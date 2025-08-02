@@ -1,27 +1,26 @@
-import { Request as IttyRequest } from 'itty-router'
+import { json, RequestHandler } from 'itty-router'
 
-import { Env } from '../types'
-import { keyForPk, respond, respondError } from '../utils'
+import { keyForUuid } from '../utils'
+import { GetResponse } from '../types'
 
-export const get = async (
-  request: IttyRequest,
+export const get: RequestHandler = async (
+  request,
   { DATA }: Env
-): Promise<Response> => {
-  const publicKey = request.params?.publicKey
-  if (!publicKey) {
-    return respondError(400, 'Missing publicKey.')
-  }
+): Promise<GetResponse> => {
+  const { uuid, key } = request.params || {}
 
-  const key = request.params?.key
+  if (!uuid) {
+    throw json({ error: 'Missing UUID.' }, { status: 400 })
+  }
   if (!key) {
-    return respondError(400, 'Missing key.')
+    throw json({ error: 'Missing key.' }, { status: 400 })
   }
 
-  const stringifiedValue = await DATA.get(keyForPk(publicKey, key))
+  const stringifiedValue = await DATA.get(keyForUuid(uuid, key))
   const value = stringifiedValue ? JSON.parse(stringifiedValue) : null
 
-  return respond(200, {
+  return {
     key,
     value,
-  })
+  }
 }

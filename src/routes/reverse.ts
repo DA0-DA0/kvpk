@@ -1,28 +1,28 @@
-import { Request as IttyRequest } from 'itty-router'
-import { Env } from '../types'
-import { respond, respondError, reverseKeyForPk } from '../utils'
+import { json, RequestHandler } from 'itty-router'
+import { reverseKeyForUuid } from '../utils'
+import { ReverseResponse } from '../types'
 
-export const reverse = async (
-  request: IttyRequest,
+export const reverse: RequestHandler = async (
+  request,
   { DATA }: Env
-): Promise<Response> => {
-  const key = request.params?.key
+): Promise<ReverseResponse> => {
+  const { key } = request.params || {}
   if (!key) {
-    return respondError(400, 'Missing key.')
+    throw json({ error: 'Missing key.' }, { status: 400 })
   }
 
-  const publicKeys: string[] = []
+  const uuids: string[] = []
   let cursor: string | undefined
   while (true) {
     const response = await DATA.list({
-      prefix: reverseKeyForPk('', key),
+      prefix: reverseKeyForUuid('', key),
       cursor,
     })
 
-    publicKeys.push(
+    uuids.push(
       ...response.keys.map((k) =>
         // Remove the key from the key.
-        k.name.replace(reverseKeyForPk('', key), '')
+        k.name.replace(reverseKeyForUuid('', key), '')
       )
     )
 
@@ -34,20 +34,20 @@ export const reverse = async (
   }
 
   const values = await Promise.all(
-    publicKeys.map((publicKey) =>
-      DATA.get(reverseKeyForPk(publicKey, key)).then((stringifiedValue) =>
+    uuids.map((uuid) =>
+      DATA.get(reverseKeyForUuid(uuid, key)).then((stringifiedValue) =>
         stringifiedValue ? JSON.parse(stringifiedValue) : null
       )
     )
   )
 
-  return respond(200, {
-    items: publicKeys
-      .map((publicKey, i) => ({
-        publicKey,
+  return {
+    items: uuids
+      .map((uuid, i) => ({
+        uuid,
         value: values[i],
       }))
       // Filter out null values since these keys were deleted.
       .filter(({ value }) => value !== null),
-  })
+  }
 }

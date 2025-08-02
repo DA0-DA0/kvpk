@@ -1,10 +1,6 @@
-import { createCors } from 'itty-cors'
-import { Router } from 'itty-router'
+import { Router, cors, json } from 'itty-router'
 
-import { Env } from './types'
 import { authMiddleware } from './auth'
-import { handleNonce } from './routes/nonce'
-import { respondError } from './utils'
 import { set } from './routes/set'
 import { setMany } from './routes/setMany'
 import { get } from './routes/get'
@@ -12,58 +8,54 @@ import { list } from './routes/list'
 import { reverse } from './routes/reverse'
 
 // Create CORS handlers.
-const { preflight, corsify } = createCors({
-  methods: ['GET', 'POST'],
-  origins: ['*'],
+const { preflight, corsify } = cors({
+  allowMethods: ['GET', 'POST'],
   maxAge: 3600,
-  headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json',
-  },
+  exposeHeaders: ['Content-Type'],
 })
 
 const router = Router()
-
-// Handle CORS preflight.
-router.all('*', preflight)
-
-//! Unauthenticated routes.
-
-// Get nonce for publicKey.
-router.get('/nonce/:publicKey', handleNonce)
-
-// Get value.
-router.get('/get/:publicKey/:key', get)
-
-// List keys with prefix.
-router.get('/list/:publicKey/:prefix', list)
-
-// List public keys that have a key set.
-router.get('/reverse/:key', reverse)
-
-//! Authenticated routes.
-
-// Set value.
-router.post('/set', authMiddleware, set)
-
-// Set many values.
-router.post('/setMany', authMiddleware, setMany)
-
-//! 404
-router.all('*', () => respondError(404, 'Not found'))
+  // Handle CORS preflight.
+  .all('*', preflight)
+  //! Unauthenticated routes.
+  // Get value.
+  .get('/get/:uuid/:key', get)
+  // List keys with prefix set for a given UUID.
+  .get('/list/:uuid/:prefix', list)
+  // List UUIDs that have a key set.
+  .get('/reverse/:key', reverse)
+  //! Authenticated routes.
+  // Set value.
+  .post('/set', authMiddleware, set)
+  // Set many values.
+  .post('/setMany', authMiddleware, setMany)
+  //! 404
+  .all('*', () => json({ error: 'Not found' }, { status: 404 }))
 
 //! Entrypoint.
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     return router
-      .handle(request, env)
+      .fetch(request, env, ctx)
+      .then(json)
       .catch((err) => {
-        console.error('Error handling request', request.url, err)
-        return respondError(
-          500,
-          `Internal server error. ${
-            err instanceof Error ? err.message : `${JSON.stringify(err)}`
-          }`
+        if (err instanceof Response) {
+          return err
+        }
+
+        console.error('Unknown error', err)
+
+        return json(
+          {
+            error:
+              'Unknown error occurred: ' +
+              (err instanceof Error ? err.message : `${err}`),
+          },
+          { status: 500 }
         )
       })
       .then(corsify)

@@ -1,33 +1,32 @@
-import { Request as IttyRequest } from 'itty-router'
-import { Env } from '../types'
-import { keyForPk, respond, respondError } from '../utils'
+import { json, RequestHandler } from 'itty-router'
+import { keyForUuid } from '../utils'
+import { ListResponse } from '../types'
 
-export const list = async (
-  request: IttyRequest,
+export const list: RequestHandler = async (
+  request,
   { DATA }: Env
-): Promise<Response> => {
-  const publicKey = request.params?.publicKey
-  if (!publicKey) {
-    return respondError(400, 'Missing publicKey.')
-  }
+): Promise<ListResponse> => {
+  const { uuid, prefix } = request.params || {}
 
-  const prefix = request.params?.prefix
+  if (!uuid) {
+    throw json({ error: 'Missing UUID.' }, { status: 400 })
+  }
   if (!prefix) {
-    return respondError(400, 'Missing prefix.')
+    throw json({ error: 'Missing prefix.' }, { status: 400 })
   }
 
   const keys: string[] = []
   let cursor: string | undefined
   while (true) {
     const response = await DATA.list({
-      prefix: keyForPk(publicKey, prefix),
+      prefix: keyForUuid(uuid, prefix),
       cursor,
     })
 
     keys.push(
       ...response.keys.map((k) =>
-        // Remove the public key prefix from the key.
-        k.name.replace(keyForPk(publicKey, ''), '')
+        // Remove the UUID prefix from the key.
+        k.name.replace(keyForUuid(uuid, ''), '')
       )
     )
 
@@ -40,13 +39,13 @@ export const list = async (
 
   const values = await Promise.all(
     keys.map((key) =>
-      DATA.get(keyForPk(publicKey, key)).then((stringifiedValue) =>
+      DATA.get(keyForUuid(uuid, key)).then((stringifiedValue) =>
         stringifiedValue ? JSON.parse(stringifiedValue) : null
       )
     )
   )
 
-  return respond(200, {
+  return {
     items: keys
       .map((key, i) => ({
         key,
@@ -54,5 +53,5 @@ export const list = async (
       }))
       // Filter out null values since these keys were deleted.
       .filter(({ value }) => value !== null),
-  })
+  }
 }

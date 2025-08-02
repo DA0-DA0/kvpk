@@ -2,13 +2,19 @@
 
 key-value for private key
 
-A [Cloudflare Worker](https://workers.cloudflare.com/) that allows a Cosmos
-keypair to store arbitrary data in a KV store. Like the blockchain, **all data
-is publicly readable.** This is _not_ a secure storage solution.
+A [Cloudflare Worker](https://workers.cloudflare.com/) that allows a private
+key, typically associated with a blockchain wallet, to store arbitrary data in a
+KV store. Like most blockchains, **all data is publicly available.** This is
+_not_ a secure storage solution—only write access is authenticated.
 
-Used template for [Cosmos wallet
-authentication](https://github.com/NoahSaso/cloudflare-worker-cosmos-auth) to
-authenticate requests via a [Cosmos](https://cosmos.network) wallet signature.
+It uses the [PFPK](https://github.com/DA0-DA0/pfpk) auth service as its
+authentication layer, which lets users manage unique profiles with one or more
+public key authorized to access them. PFPK generates a UUID (universally unique
+identifier) for each profile, which KVPK associates key-value pairs with.
+
+To look up a value for a given public key or blockchain address, use
+[PFPK's profile retrieval endpoint](https://github.com/DA0-DA0/pfpk?tab=readme-ov-file#get-publickey)
+to resolve the profile's UUID, and then look it up here.
 
 ## Development
 
@@ -53,19 +59,29 @@ npm run deploy
 
 ## API
 
-See [the authentication template's
-docs](https://github.com/NoahSaso/cloudflare-worker-cosmos-auth#client-usage) on
-how to authenticate requests with a Cosmos wallet.
+Request and response bodies are encoded via JSON.
+
+### Authentication
+
+1. Create a token with the PFPK auth service.
+
+   The token must have this service's hostname (probably `kvpk.daodao.zone`) as
+   the audience, and `admin` as the role.
+
+   See the [PFPK auth service
+   docs](https://github.com/DA0-DA0/pfpk?tab=readme-ov-file#post-tokens) for more
+   information.
+
+2. Set a bearer token in the `Authorization` header, like: `Authorization: Bearer JWT_TOKEN`.
 
 ### `POST /set`
 
-The request data for this route must be included in the `data` field that gets
-signed in the authentication API described above.
+Set the `Authorization` header to the PFPK auth token as described above.
 
 Set a key-value pair in the KV store. Set `value` to `null` to delete a key. Any
 other value will be stored and returned identically.
 
-#### Request data:
+#### Request
 
 ```typescript
 {
@@ -74,46 +90,40 @@ other value will be stored and returned identically.
 }
 ```
 
-#### Response:
+#### Response
 
-```typescript
-{
-  "success": true
-}
-```
+A 204 No Content response is returned on success.
 
 ### `POST /setMany`
 
-The request data for this route must be included in the `data` field that gets
-signed in the authentication API described above.
+Set the `Authorization` header to the PFPK auth token as described above.
 
 Set many key-value pairs in the KV store. Set `value` to `null` to delete a key.
 Any other value will be stored and returned identically.
 
-#### Request data:
+#### Request
 
 ```typescript
 {
-  "data": {
+  "items": {
     "key": string
     "value": any | null
   }[]
 }
 ```
 
-#### Response:
+#### Response
 
-```typescript
-{
-  "success": true
-}
-```
+A 204 No Content response is returned on success.
 
-### `GET /get/:publicKey/:key`
+### `GET /get/:uuid/:key`
 
-Get a value from the KV store. `publicKey` is a hex-encoded Cosmos public key.
+No authentication is required.
 
-#### Response:
+Get a value from the KV store. `uuid` is the UUID of the user's profile from the
+PFPK auth service.
+
+#### Response
 
 ```typescript
 {
@@ -122,12 +132,14 @@ Get a value from the KV store. `publicKey` is a hex-encoded Cosmos public key.
 }
 ```
 
-### `GET /list/:publicKey/:prefix`
+### `GET /list/:uuid/:prefix`
 
-List keys with a prefix in the KV store. `publicKey` is a hex-encoded Cosmos
-public key.
+No authentication is required.
 
-#### Response:
+List keys with a prefix in the KV store. `uuid` is the UUID of the user's
+profile from the PFPK auth service.
+
+#### Response
 
 ```typescript
 {
@@ -140,15 +152,17 @@ public key.
 
 ### `GET /reverse/:key`
 
-Get the list of public keys that have a key-value pair with the given key in the
-KV store. `publicKey` in the response is a hex-encoded Cosmos public key.
+No authentication is required.
 
-#### Response:
+Get the list of UUIDs that have a key-value pair with the given key in the KV
+store.
+
+#### Response
 
 ```typescript
 {
   "items": Array<{
-    "publicKey": string
+    "uuid": string
     "value": any
   }>
 }

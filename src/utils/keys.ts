@@ -1,5 +1,10 @@
-export const keyForPk = (publicKey: string, key: string) =>
-  `KV:${publicKey}:${key}`
+/**
+ * The key is used to lookup a value for a given UUID and key.
+ */
+export const keyForUuid = (uuid: string, key: string) => `KV:${uuid}:${key}`
 
-export const reverseKeyForPk = (publicKey: string, key: string) =>
-  `REVERSE_KV:${key}:${publicKey}`
+/**
+ * The reverse key is used to lookup all keys for a given UUID.
+ */
+export const reverseKeyForUuid = (uuid: string, key: string) =>
+  `REVERSE_KV:${key}:${uuid}`

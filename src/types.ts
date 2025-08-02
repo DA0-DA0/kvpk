@@ -1,32 +1,46 @@
-import { Request as IttyRequest } from 'itty-router'
+import { IRequestStrict } from 'itty-router'
 
-export interface Env {
-  NONCES: KVNamespace
-  DATA: KVNamespace
-}
-
-export interface Auth {
-  type: string
-  nonce: number
-  chainId: string
-  chainFeeDenom: string
-  chainBech32Prefix: string
-  publicKey: string
-}
-
-export type RequestBody<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Data extends Record<string, unknown> = Record<string, any>
-> = {
-  data: {
-    auth: Auth
-  } & Data
-  signature: string
+export type PfpkFetchAuthenticatedResponse = {
+  uuid: string
 }
 
 export type AuthorizedRequest<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Data extends Record<string, any> = Record<string, any>
-> = IttyRequest & {
-  parsedBody: RequestBody<Data>
+  Data extends Record<string, unknown> = Record<string, unknown>
+> = IRequestStrict & {
+  /**
+   * The parsed body of the request, if any.
+   */
+  data: Data
+  /**
+   * The UUID of the authenticated user.
+   */
+  uuid: string
+}
+
+export type SetRequest = {
+  key: string
+  value: unknown
+}
+
+export type SetManyRequest = {
+  items: { key: string; value: unknown }[]
+}
+
+export type GetResponse = {
+  key: string
+  value: unknown
+}
+
+export type ListResponse = {
+  items: {
+    key: string
+    value: unknown
+  }[]
+}
+
+export type ReverseResponse = {
+  items: {
+    uuid: string
+    value: unknown
+  }[]
 }
