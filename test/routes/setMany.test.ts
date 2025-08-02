@@ -1,7 +1,7 @@
 import { env, fetchMock } from 'cloudflare:test'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { get, setMany } from './routes'
+import { TEST_HOSTNAME, get, setMany } from './routes'
 import { kvSet } from '../../src/utils'
 
 describe('POST /setMany', () => {
@@ -10,7 +10,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(200, {
           uuid: 'user',
@@ -280,7 +280,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(401, {
           error: 'MOCK_UNAUTHORIZED',
@@ -307,7 +307,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(404, {
           error: 'MOCK_NOT_FOUND',
@@ -336,7 +336,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(412, {
           error: 'MOCK_PRECONDITION_FAILED',
@@ -367,7 +367,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(200, {
           notUuid: 'user',
@@ -383,7 +383,9 @@ describe('POST /setMany', () => {
         'token'
       )
       expect(response.status).toBe(500)
-      expect(error).toBe('Expected UUID in PFPK auth response but got none.')
+      expect(error).toBe(
+        'Error parsing PFPK auth response: UUID does not exist or is malformed.'
+      )
 
       // Ensure that the key-value pair was not set.
       expect((await get('user', 'hello')).body).toEqual({
@@ -396,7 +398,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(200, {
           uuid: 123,
@@ -412,7 +414,9 @@ describe('POST /setMany', () => {
         'token'
       )
       expect(response.status).toBe(500)
-      expect(error).toBe('Expected UUID in PFPK auth response but got none.')
+      expect(error).toBe(
+        'Error parsing PFPK auth response: UUID does not exist or is malformed.'
+      )
 
       // Ensure that the key-value pair was not set.
       expect((await get('user', 'hello')).body).toEqual({
@@ -425,7 +429,7 @@ describe('POST /setMany', () => {
       fetchMock
         .get('https://pfpk.daodao.zone')
         .intercept({
-          path: '/auth?audience=kvpk.daodao.zone&role=admin',
+          path: `/auth?audience=${TEST_HOSTNAME}&role=admin`,
         })
         .reply(200, 'notJson')
 
@@ -439,7 +443,9 @@ describe('POST /setMany', () => {
         'token'
       )
       expect(response.status).toBe(500)
-      expect(error).toBe('Expected UUID in PFPK auth response but got none.')
+      expect(error).toBe(
+        'Error parsing PFPK auth response: Unexpected token \'o\', "notJson" is not valid JSON'
+      )
 
       // Ensure that the key-value pair was not set.
       expect((await get('user', 'hello')).body).toEqual({

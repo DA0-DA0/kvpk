@@ -2,6 +2,9 @@ name = "kvpk"
 main = "src/index.ts"
 compatibility_date = "2025-07-12"
 
+# enables global fetch to connect to PFPK auth in a worker in the same zone
+compatibility_flags = ["global_fetch_strictly_public"]
+
 routes = [
   { pattern = "kvpk.daodao.zone", custom_domain = true, zone_name = "daodao.zone" },
 ]

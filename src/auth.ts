@@ -2,6 +2,8 @@ import { json } from 'itty-router'
 
 import { AuthorizedRequest, PfpkFetchAuthenticatedResponse } from './types'
 
+const PFPK_HOSTNAME = 'pfpk.daodao.zone'
+
 // Middleware to protect routes with the above function. If it does not return,
 // the request is authorized. If successful, the `parsedBody` field will be set
 // on the request object, accessible by successive middleware and route
@@ -41,12 +43,12 @@ export const authMiddleware = async (
   }
 
   // Validate token against PFPK auth.
+  const hostname = new URL(request.url).hostname
   const authenticated = await fetch(
-    'https://pfpk.daodao.zone/auth?' +
-      new URLSearchParams({
-        audience: 'kvpk.daodao.zone',
-        role: 'admin',
-      }),
+    `https://${PFPK_HOSTNAME}/auth?${new URLSearchParams({
+      audience: hostname,
+      role: 'admin',
+    }).toString()}`,
     {
       method: 'GET',
       headers: {
@@ -83,22 +85,23 @@ export const authMiddleware = async (
     }
   }
 
-  // On success, set UUID on request.
-  const { uuid } = await authenticated
-    .json<PfpkFetchAuthenticatedResponse>()
-    .catch(() => ({
-      uuid: '',
-    }))
-  if (!uuid || typeof uuid !== 'string') {
+  try {
+    const { uuid } = await authenticated.json<PfpkFetchAuthenticatedResponse>()
+    if (!uuid || typeof uuid !== 'string') {
+      throw new Error('UUID does not exist or is malformed.')
+    }
+
+    request.uuid = uuid
+  } catch (err) {
     throw json(
-      { error: 'Expected UUID in PFPK auth response but got none.' },
+      {
+        error: `Error parsing PFPK auth response: ${err instanceof Error ? err.message : `${err}`}`,
+      },
       {
         status: 500,
       }
     )
   }
-
-  request.uuid = uuid
 
   // Parse JSON body and set on request.
   try {
