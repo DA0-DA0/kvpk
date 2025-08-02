@@ -1,6 +1,8 @@
 import { Router, cors, json } from 'itty-router'
 
 import { authMiddleware } from './auth'
+import { arrayInsert } from './routes/arrayInsert'
+import { arrayRemove } from './routes/arrayRemove'
 import { get } from './routes/get'
 import { list } from './routes/list'
 import { reverse } from './routes/reverse'
@@ -29,6 +31,10 @@ const router = Router()
   .post('/set', authMiddleware, set)
   // Set many values.
   .post('/setMany', authMiddleware, setMany)
+  // Insert into array.
+  .post('/arrayInsert', authMiddleware, arrayInsert)
+  // Remove from array.
+  .post('/arrayRemove', authMiddleware, arrayRemove)
   //! 404
   .all('*', () => json({ error: 'Not found' }, { status: 404 }))
 

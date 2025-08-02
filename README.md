@@ -70,7 +70,7 @@ other value will be stored and returned identically.
 
 #### Request
 
-```typescript
+```ts
 {
   "key": string
   "value": any | null
@@ -90,7 +90,7 @@ Any other value will be stored and returned identically.
 
 #### Request
 
-```typescript
+```ts
 {
   "items": {
     "key": string
@@ -103,6 +103,61 @@ Any other value will be stored and returned identically.
 
 A 204 No Content response is returned on success.
 
+### `POST /arrayInsert`
+
+Set the `Authorization` header to the PFPK auth token as described above.
+
+Insert a value into an array, creating the array if it doesn't exist. If `index`
+is provided, the value is inserted at the given index. If `index` is not
+provided, the value is appended to the end of the array.
+
+#### Request
+
+```ts
+{
+  "key": string
+  "value": any
+  "index": number | undefined
+}
+```
+
+#### Response
+
+The new array is returned.
+
+```ts
+{
+  "key": string
+  "value": any
+}
+```
+
+### `POST /arrayRemove`
+
+Set the `Authorization` header to the PFPK auth token as described above.
+
+Remove a value from an array at the given index.
+
+#### Request
+
+```ts
+{
+  "key": string
+  "index": number
+}
+```
+
+#### Response
+
+The new array is returned.
+
+```ts
+{
+  "key": string
+  "value": any
+}
+```
+
 ### `GET /get/:uuid/:key`
 
 No authentication is required.
@@ -112,7 +167,7 @@ the PFPK auth service.
 
 #### Response
 
-```typescript
+```ts
 {
   "key": string
   "value": any | null
@@ -128,7 +183,7 @@ profile from the PFPK auth service.
 
 #### Response
 
-```typescript
+```ts
 {
   "items": Array<{
     "key": string
@@ -145,7 +200,7 @@ Get the list of UUIDs and values that have a given key set.
 
 #### Response
 
-```typescript
+```ts
 {
   "items": Array<{
     "uuid": string

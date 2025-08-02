@@ -1,6 +1,8 @@
 import { SELF } from 'cloudflare:test'
 
 import {
+  ArrayInsertRequest,
+  ArrayRemoveRequest,
   GetResponse,
   ListResponse,
   ReverseResponse,
@@ -103,6 +105,54 @@ export const setMany = async (
   const body = response.body ? await response.json<any>() : undefined
   return {
     response,
+    error: body?.error as string | undefined,
+  }
+}
+
+export const arrayInsert = async (
+  data?: ArrayInsertRequest,
+  token?: string,
+  headers?: Record<string, string>,
+  bodyOverride?: string
+) => {
+  const request = new Request(url('/arrayInsert'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token !== undefined ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+    body: bodyOverride ?? (data && JSON.stringify(data)),
+  })
+  const response = await SELF.fetch(request)
+  const body = response.body ? await response.json<any>() : undefined
+  return {
+    response,
+    body: body as GetResponse,
+    error: body?.error as string | undefined,
+  }
+}
+
+export const arrayRemove = async (
+  data?: ArrayRemoveRequest,
+  token?: string,
+  headers?: Record<string, string>,
+  bodyOverride?: string
+) => {
+  const request = new Request(url('/arrayRemove'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token !== undefined ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+    body: bodyOverride ?? (data && JSON.stringify(data)),
+  })
+  const response = await SELF.fetch(request)
+  const body = response.body ? await response.json<any>() : undefined
+  return {
+    response,
+    body: body as GetResponse,
     error: body?.error as string | undefined,
   }
 }

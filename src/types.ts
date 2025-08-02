@@ -26,6 +26,17 @@ export type SetManyRequest = {
   items: { key: string; value: unknown }[]
 }
 
+export type ArrayInsertRequest = {
+  key: string
+  value: unknown
+  index?: number
+}
+
+export type ArrayRemoveRequest = {
+  key: string
+  index: number
+}
+
 export type GetResponse = {
   key: string
   value: unknown
