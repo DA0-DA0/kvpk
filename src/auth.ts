@@ -16,7 +16,6 @@ export const authMiddleware = async (
       { error: 'Unauthorized: No authorization header.' },
       {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
       }
     )
   }
@@ -28,7 +27,6 @@ export const authMiddleware = async (
       { error: 'Unauthorized: Invalid token type, expected `Bearer`.' },
       {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
       }
     )
   }
@@ -38,7 +36,6 @@ export const authMiddleware = async (
       { error: 'Unauthorized: No token provided.' },
       {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
       }
     )
   }
@@ -66,13 +63,24 @@ export const authMiddleware = async (
       error = JSON.parse(body).error
     } catch {}
 
-    throw json(
-      { error },
-      {
-        status: authenticated.status,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    // Pass 401 and 404 errors through.
+    if (authenticated.status === 401 || authenticated.status === 404) {
+      throw json(
+        { error },
+        {
+          status: authenticated.status,
+        }
+      )
+    } else {
+      throw json(
+        {
+          error: `Unexpected error from PFPK auth: status=${authenticated.status} statusText=${authenticated.statusText} body=${body}`,
+        },
+        {
+          status: 500,
+        }
+      )
+    }
   }
 
   // On success, set UUID on request.
@@ -81,15 +89,28 @@ export const authMiddleware = async (
     .catch(() => ({
       uuid: '',
     }))
-  if (!uuid) {
+  if (!uuid || typeof uuid !== 'string') {
     throw json(
-      { error: 'Expected UUID in response but got none.' },
+      { error: 'Expected UUID in PFPK auth response but got none.' },
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
       }
     )
   }
 
   request.uuid = uuid
+
+  // Parse JSON body and set on request.
+  try {
+    request.data = await request.json()
+  } catch (err) {
+    throw json(
+      {
+        error: `Failed to parse JSON body: ${err instanceof Error ? err.message : `${err}`}`,
+      },
+      {
+        status: 400,
+      }
+    )
+  }
 }

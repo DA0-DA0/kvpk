@@ -2,21 +2,33 @@
   "name": "kvpk",
   "version": "0.0.1",
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.59",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
+    "@vitest/coverage-istanbul": "^3.2.4",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-unused-imports": "^3.1.0",
     "prettier": "^3.2.5",
     "typescript": "^5.3.3",
+    "vitest": "^3.2.4",
     "wrangler": "^4.26.0"
   },
   "private": true,
   "scripts": {
+    "test": "vitest --run",
+    "coverage": "npm run test -- --coverage",
     "build": "tsc",
-    "start": "wrangler dev",
-    "deploy": "wrangler publish",
-    "dev": "wrangler dev --local --persist"
+    "lint": "eslint .",
+    "format": "eslint . --fix",
+    "generate:types": "wrangler types",
+    "dev": "wrangler dev --port 58228",
+    "deploy": "wrangler deploy --minify",
+    "log": "wrangler tail",
+    "db:migrate": "wrangler d1 migrations apply kvpk",
+    "db:seed": "wrangler d1 execute kvpk --file=./schema.sql"
   },
   "dependencies": {
     "itty-router": "^5.0.20"

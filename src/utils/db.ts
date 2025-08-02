@@ -9,13 +9,6 @@ export const kvSet = (
 ) => {
   const stringifiedValue = JSON.stringify(value)
 
-  // Set min key length to 1 character.
-  if (key.length < 1) {
-    throw json(
-      { error: 'Key is too short. Min length is 1 character.' },
-      { status: 400 }
-    )
-  }
   // Set max key length to 256 characters.
   if (key.length > 256) {
     throw json(
